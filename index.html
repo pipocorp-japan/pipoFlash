@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ja" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>pipoFlash 1.0</title>
+    
+    <!-- Google Fonts: Inter (SIL Open Font License) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (MIT License) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        
+        /* Flip Animation */
+        .flip-container { perspective: 1000px; }
+        .flipper { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; position: relative; }
+        .flip-container.flipped .flipper { transform: rotateY(180deg); }
+        .front, .back { backface-visibility: hidden; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; border-radius: 1rem; }
+        .back { transform: rotateY(180deg); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-active { opacity: 1; transform: scale(1); }
+        .page-transition { transition: opacity 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen flex overflow-hidden transition-colors duration-200">
+
+    <!-- サイドバー -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl lg:shadow-none">
+        
+        <!-- App Switcher -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition group" onclick="toggleAppMenu()">
+            <span id="app-icon" class="text-2xl mr-3 group-hover:scale-110 transition-transform">⚡</span>
+            <div class="flex-grow">
+                <h1 id="app-name" class="font-extrabold text-lg tracking-tight text-slate-800 dark:text-white">pipoFlash</h1>
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Tap to switch</p>
+            </div>
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            
+            <!-- Dropdown -->
+            <div id="app-dropdown" class="absolute top-16 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-600 p-2 hidden z-50 flex-col gap-1 ring-1 ring-black/5">
+                <button onclick="switchAppMode('flash')" class="flex items-center p-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-left transition">
+                    <span class="text-2xl mr-3">⚡</span>
+                    <div><div class="font-bold">pipoFlash</div><div class="text-xs text-slate-500">暗記カードモード</div></div>
+                </button>
+                <button onclick="switchAppMode('quiz')" class="flex items-center p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-left transition">
+                    <span class="text-2xl mr-3">🎓</span>
+                    <div><div class="font-bold">pipoQuiz</div><div class="text-xs text-slate-500">4択クイズモード</div></div>
+                </button>
+            </div>
+        </div>
+
+        <nav class="flex-grow overflow-y-auto p-4 space-y-1">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Library</div>
+            <button onclick="selectFolder(null)" id="nav-all" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                すべてのデッキ
+            </button>
+            
+            <div class="mt-8 flex justify-between items-center px-2 mb-2">
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Folders</div>
+                <button onclick="createFolder()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+            </div>
+            <div id="folder-list" class="space-y-1"></div>
+        </nav>
+
+        <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <button onclick="openSettings()" class="flex items-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                設定
+            </button>
+            <button onclick="toggleDarkMode()" class="text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-yellow-300 transition">
+                <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- メインエリア -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full lg:ml-72 transition-all duration-300">
+        
+        <!-- ヘッダー -->
+        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 justify-between flex-shrink-0 z-10">
+            <div class="flex items-center overflow-hidden">
+                <button onclick="toggleSidebar()" class="lg:hidden mr-3 p-2 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="page-title" class="text-lg font-bold text-slate-800 dark:text-white truncate">すべてのデッキ</h2>
+            </div>
+            <div id="save-indicator" class="text-xs font-medium text-slate-400 flex items-center opacity-0 transition-opacity duration-500">
+                <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Saving...
+            </div>
+        </header>
+
+        <!-- 1. ダッシュボード -->
+        <div id="view-dashboard" class="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-900 page-transition">
+            <div id="deck-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center h-96 text-center">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-full mb-6 shadow-sm animate-bounce-slow">
+                    <span class="text-5xl" id="empty-icon">📂</span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">デッキがありません</h3>
+                <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">右下の＋ボタンを押して、新しい学習セットを作成しましょう。</p>
+                <button onclick="openCreateModal()" class="px-6 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    + 新しいデッキを作成
+                </button>
+            </div>
+
+            <button onclick="openCreateModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 flex items-center justify-center transition transform hover:scale-110 z-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+        </div>
+
+        <!-- 2. エディタ -->
+        <div id="view-editor" class="hidden flex-grow flex flex-col bg-slate-50 dark:bg-slate-900 relative z-20 page-transition">
+            <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between shadow-sm z-30">
+                <div class="flex-grow w-full sm:w-auto flex gap-2">
+                    <button onclick="renderDashboard()" class="p-2 mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                    <input type="text" id="meta-title" class="flex-grow bg-transparent border-b-2 border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none text-xl font-bold text-slate-900 dark:text-white px-2 py-1 transition" placeholder="デッキ名" oninput="debounceSave()">
+                </div>
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                    <span id="editor-mode-badge" class="px-2 py-1 text-xs font-bold rounded bg-slate-100 dark:bg-slate-700 text-slate-500 uppercase">MODE</span>
+                    <button onclick="toggleJsonMode()" id="btn-json-mode" class="px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">JSON</button>
+                    <button onclick="startStudy()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm shadow hover:bg-indigo-700 flex items-center transition hover:shadow-md">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        学習開始
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex-grow relative overflow-hidden">
+                <div id="editor-gui" class="absolute inset-0 overflow-y-auto p-4 sm:p-8 pb-32">
+                    <div id="card-list" class="space-y-4 max-w-4xl mx-auto"></div>
+                    <div class="max-w-4xl mx-auto mt-6">
+                         <button onclick="addEmptyCard()" class="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center justify-center font-bold bg-slate-50 dark:bg-slate-800/50">
+                            + カードを追加
+                        </button>
+                    </div>
+                </div>
+                <div id="editor-json" class="absolute inset-0 hidden p-4 sm:p-6 bg-slate-900 z-40">
+                    <textarea id="json-textarea" class="w-full h-full bg-slate-800 text-emerald-400 font-mono text-sm p-4 rounded border border-slate-700 focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"></textarea>
+                    <button onclick="saveJsonRaw()" class="absolute bottom-8 right-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded shadow-lg hover:bg-emerald-500 z-50 transition">保存して戻る</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 学習モード -->
+        <div id="view-study" class="hidden flex-grow flex flex-col items-center justify-center p-4 bg-slate-100 dark:bg-slate-900 relative z-50 page-transition">
+            <button onclick="exitStudy()" class="absolute top-4 left-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition" title="終了 (Esc)">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div class="w-full max-w-2xl h-full flex flex-col justify-center py-4">
+                <div class="flex justify-between items-end mb-4 px-2">
+                    <h2 id="study-deck-name" class="text-xl font-bold text-slate-700 dark:text-slate-200 truncate pr-4">Title</h2>
+                    <div id="study-progress" class="text-sm font-mono text-slate-500 dark:text-slate-400 font-bold">1 / 10</div>
+                </div>
+                
+                <!-- 進捗バー -->
+                <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
+                    <div id="study-progress-bar" class="h-full transition-all duration-300"></div>
+                </div>
+
+                <div id="study-card-area" class="w-full relative flex-grow max-h-[600px] bg-transparent perspective-1000"></div>
+                
+                <div class="flex justify-between items-center mt-8 px-8 h-20">
+                    <button onclick="handleKeyboardPrev()" class="p-4 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full shadow-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition transform hover:-translate-x-1" title="戻る (←)">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <div id="quiz-controls" class="hidden flex gap-4">
+                        <button id="btn-quiz-submit" onclick="submitQuiz()" class="px-8 py-3 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105">回答する</button>
+                    </div>
+                    <button id="btn-next" onclick="handleKeyboardNext()" class="p-4 text-white rounded-full shadow-lg transition transform hover:translate-x-1 hover:shadow-xl" title="進む (→)">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-4 h-4" id="study-hint">キーボード操作: [→] 進む / [←] 戻る</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- モーダル: 新規作成 -->
+    <div id="modal-create" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white">新規作成</h3>
+                <button onclick="closeModal('modal-create')" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-5 space-y-3">
+                <button onclick="createNewDeck()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 transition group">
+                    <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg text-indigo-600 dark:text-indigo-300 mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+                    <div class="text-left"><div class="font-bold text-slate-800 dark:text-slate-200">空白のデッキ</div><div class="text-xs text-slate-500">一から作成します</div></div>
+                </button>
+                <button onclick="document.getElementById('file-import').click()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-200 transition group">
+                    <div class="bg-emerald-100 dark:bg-emerald-900 p-3 rounded-lg text-emerald-600 dark:text-emerald-300 mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></div>
+                    <div class="text-left"><div class="font-bold text-slate-800 dark:text-slate-200">インポート (pSJSON/CSV)</div><div class="text-xs text-slate-500">ファイルを読み込みます</div></div>
+                </button>
+                <input type="file" id="file-import" class="hidden" accept=".json,.csv" onchange="handleImport(this)">
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル: デッキ設定 -->
+    <div id="modal-deck-settings" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+            <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">デッキ設定</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">デッキ名</label>
+                    <input type="text" id="setting-name" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-1/3">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">アイコン</label>
+                        <input type="text" id="setting-icon" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-center text-2xl focus:ring-2 focus:ring-indigo-500" placeholder="📂">
+                    </div>
+                    <div class="w-2/3">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">テーマカラー (HEX)</label>
+                        <div class="flex items-center gap-2">
+                             <input type="color" id="setting-color" class="h-10 w-full rounded cursor-pointer border-0 bg-transparent p-0">
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                    <button onclick="openMoveModalFromSettings()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition">フォルダー移動</button>
+                    <button onclick="deleteDeckFromSettings()" class="w-full py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition">デッキを削除</button>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeModal('modal-deck-settings')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-bold">キャンセル</button>
+                <button onclick="saveDeckSettings()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル: アプリ設定 -->
+    <div id="modal-settings" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+            <!-- Settings View -->
+            <div id="settings-main">
+                <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">アプリ設定</h3>
+                <div class="space-y-3">
+                    <button onclick="exportAllData()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">全データをバックアップ (JSON)</button>
+                    <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold">謝辞 / Open Source Licenses</button>
+                    <button onclick="closeModal('modal-settings')" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-lg text-sm">閉じる</button>
+                </div>
+            </div>
+            
+            <!-- Licenses View (Hidden by default) -->
+            <div id="settings-licenses" class="hidden">
+                <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">謝辞 / Credits</h3>
+                <div class="space-y-4 text-xs text-slate-600 dark:text-slate-400 h-64 overflow-y-auto pr-2 mb-4">
+                    <div>
+                        <strong class="block text-sm text-slate-800 dark:text-slate-200">pipoFlash</strong>
+                        <p>Copyright © 2025 Yu Sato</p>
+                    </div>
+                    <div>
+                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Tailwind CSS</strong>
+                        <p>Copyright (c) Tailwind Labs, Inc. (MIT License)</p>
+                    </div>
+                    <div>
+                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Inter Font</strong>
+                        <p>Copyright (c) 2016 The Inter Project Authors (SIL Open Font License, Version 1.1)</p>
+                    </div>
+                    <div>
+                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Heroicons</strong>
+                        <p>Copyright (c) 2020 Refactoring UI Inc. (MIT License)</p>
+                    </div>
+                </div>
+                <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル: 移動 -->
+    <div id="modal-move" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 dark:text-white">移動先のフォルダー</h3>
+            <div id="move-folder-list" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
+            <button onclick="closeModal('modal-move')" class="w-full py-2 text-slate-500">キャンセル</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'pipoFlash_v1_data';
+        
+        let appData = { settings: { theme: 'light' }, folders: [], decks: [] };
+        let state = { currentAppMode: 'flash', currentFolderId: null, currentDeckId: null, studyIndex: 0, quizSelected: new Set(), quizAnswered: false, moveTargetDeckId: null, editingDeckId: null };
+        let saveTimeout = null;
+
+        const uuid = () => crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+        const escapeHtml = (t) => t ? t.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) : "";
+        const getCurrentDeck = () => appData.decks.find(d => d.id === state.currentDeckId);
+
+        window.onload = () => {
+            loadData();
+            if (appData.settings.theme === 'dark') document.documentElement.classList.add('dark');
+            updateAppHeader();
+            renderFolderNav();
+            renderDashboard();
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('view-study').classList.contains('hidden')) return;
+            if (e.key === 'ArrowRight') handleKeyboardNext();
+            else if (e.key === 'ArrowLeft') handleKeyboardPrev();
+            else if (e.key === 'Escape') exitStudy();
+        });
+
+        // --- Data Handling ---
+        function loadData() {
+            const json = localStorage.getItem(STORAGE_KEY);
+            if (json) {
+                try {
+                    const parsed = JSON.parse(json);
+                    if (parsed.decks) {
+                        parsed.decks.forEach(d => {
+                            if (!d.id) d.id = uuid();
+                            if (!d.pSver) d.pSver = 1;
+                            if (!d.cre) d.cre = "User";
+                            if (!d.ver) d.ver = 1;
+                            if (!d.col) d.col = "#6366f1"; 
+                            if (!d.ico) d.ico = d.mod === 'flash' ? '📂' : '🎓';
+                            if (!d.con) d.con = [];
+                            if (!d.stats) d.stats = { plays: 0, lastPlayed: null, lastScore: 0 };
+                        });
+                        appData = { ...appData, ...parsed };
+                    }
+                } catch(e) { console.error("Load Error", e); }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            const el = document.getElementById('save-indicator');
+            el.classList.remove('opacity-0');
+            setTimeout(() => el.classList.add('opacity-0'), 2000);
+        }
+        function debounceSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveData, 1000); }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            appData.settings.theme = isDark ? 'dark' : 'light';
+            saveData();
+        }
+
+        // --- UI Rendering ---
+        function renderDashboard() {
+            setView('view-dashboard');
+            const folder = appData.folders.find(f => f.id === state.currentFolderId);
+            document.getElementById('page-title').textContent = folder ? folder.name : "すべてのデッキ";
+            const grid = document.getElementById('deck-grid');
+            grid.innerHTML = '';
+
+            let filtered = appData.decks.filter(d => d.mod === state.currentAppMode);
+            if (state.currentFolderId) filtered = filtered.filter(d => d.folderId === state.currentFolderId);
+
+            if (!filtered.length) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('empty-icon').textContent = state.currentAppMode === 'flash' ? '📂' : '🎓';
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+                filtered.forEach(deck => {
+                    const el = document.createElement('div');
+                    el.className = `rounded-2xl p-6 shadow-sm border transition relative group cursor-pointer flex flex-col h-56 bg-white dark:bg-slate-800 hover:shadow-lg`;
+                    el.style.borderColor = `${deck.col}40`; 
+                    el.onmouseenter = () => el.style.borderColor = deck.col;
+                    el.onmouseleave = () => el.style.borderColor = `${deck.col}40`;
+
+                    const count = deck.con.length;
+                    const stats = deck.stats || { plays: 0, lastScore: 0 };
+                    
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl">${escapeHtml(deck.ico)}</span>
+                                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-2 leading-tight">${escapeHtml(deck.nam)}</h3>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-xs text-slate-400 mt-2 gap-3">
+                            <span class="flex items-center"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${stats.plays}回</span>
+                            ${deck.mod === 'quiz' ? `<span class="flex items-center ${stats.lastScore >= 80 ? 'text-emerald-500' : ''}"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Avg: ${stats.lastScore}%</span>` : ''}
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <button onclick="event.stopPropagation(); startStudyDirect('${deck.id}')" class="pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transform transition duration-300 group-hover:scale-110 shadow-sm group-hover:shadow-lg" style="background-color: ${deck.col}; color: white;">
+                                <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                        </div>
+                        <div class="flex-grow"></div>
+                        <div class="flex justify-between items-end mt-2 relative z-20">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${count} items</span>
+                            <button onclick="event.stopPropagation(); showDeckSettings('${deck.id}')" class="menu-btn p-2 -mr-2 -mb-2 text-slate-300 hover:text-slate-600 dark:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                            </button>
+                        </div>
+                    `;
+                    el.onclick = (e) => { if(!e.target.closest('button')) openEditor(deck.id); };
+                    grid.appendChild(el);
+                });
+            }
+        }
+
+        // --- Settings & Editor ---
+        function showDeckSettings(id) {
+            state.editingDeckId = id;
+            const deck = appData.decks.find(d => d.id === id);
+            document.getElementById('setting-name').value = deck.nam;
+            document.getElementById('setting-icon').value = deck.ico;
+            document.getElementById('setting-color').value = deck.col;
+            openModal('modal-deck-settings');
+        }
+        function saveDeckSettings() {
+            const deck = appData.decks.find(d => d.id === state.editingDeckId);
+            if(deck) {
+                deck.nam = document.getElementById('setting-name').value || "無題";
+                deck.ico = document.getElementById('setting-icon').value || "📂";
+                deck.col = document.getElementById('setting-color').value || "#6366f1";
+                saveData(); closeModal('modal-deck-settings'); renderDashboard();
+            }
+        }
+        function openEditor(id) {
+            state.currentDeckId = id;
+            const deck = getCurrentDeck();
+            if (deck.mod !== state.currentAppMode) switchAppMode(deck.mod);
+            setView('view-editor');
+            document.getElementById('meta-title').value = deck.nam;
+            document.getElementById('editor-mode-badge').textContent = deck.mod;
+            document.getElementById('editor-mode-badge').className = `px-2 py-1 text-xs font-bold rounded uppercase ${deck.mod === 'flash' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`;
+            renderCardList();
+        }
+        function renderCardList() {
+            const deck = getCurrentDeck();
+            const list = document.getElementById('card-list');
+            list.innerHTML = '';
+            deck.con.forEach((c, idx) => {
+                if (deck.mod === 'flash') {
+                    const row = document.createElement('div');
+                    row.className = "group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm flex gap-3 items-start";
+                    row.innerHTML = `<div class="text-xs font-bold text-slate-300 pt-2 w-6 text-center">${idx + 1}</div><div class="flex-grow space-y-2 min-w-0"><input type="text" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none py-1 font-bold text-slate-800 dark:text-slate-200 placeholder-slate-300" placeholder="質問"><textarea rows="1" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none py-1 text-slate-600 dark:text-slate-400 resize-none placeholder-slate-300" placeholder="答え"></textarea></div><button class="opacity-0 group-hover:opacity-100 focus:opacity-100 p-2 text-slate-300 hover:text-red-500 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>`;
+                    const [qIn, aIn] = row.querySelectorAll('input, textarea');
+                    qIn.value = c.q; qIn.oninput = (e) => { c.q = e.target.value; debounceSave(); };
+                    aIn.value = c.a; aIn.oninput = (e) => { c.a = e.target.value; debounceSave(); };
+                    row.querySelector('button').onclick = () => removeCard(idx);
+                    list.appendChild(row);
+                } else {
+                    const row = document.createElement('div'); row.className = "group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-xl shadow-sm";
+                    const head = document.createElement('div'); head.className = "flex justify-between items-start mb-3";
+                    const qContainer = document.createElement('div'); qContainer.className = "flex gap-3 w-full"; qContainer.innerHTML = `<div class="text-xs font-bold text-slate-300 pt-2 w-6 text-center">${idx + 1}</div>`;
+                    const qInput = document.createElement('input'); qInput.className = "w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 focus:outline-none py-1 font-bold text-lg text-slate-800 dark:text-slate-200 placeholder-slate-300"; qInput.placeholder = "問題文"; qInput.value = c.q; qInput.oninput = (e) => { c.q = e.target.value; debounceSave(); };
+                    qContainer.appendChild(qInput);
+                    const delBtn = document.createElement('button'); delBtn.className = "text-slate-300 hover:text-red-500 ml-2"; delBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>'; delBtn.onclick = () => removeCard(idx);
+                    head.appendChild(qContainer); head.appendChild(delBtn); row.appendChild(head);
+                    const opts = document.createElement('div'); opts.className = "pl-9 pr-2";
+                    c.a.forEach((opt, oIdx) => {
+                        const optRow = document.createElement('div'); optRow.className = "flex items-center gap-2 mb-2";
+                        const check = document.createElement('button'); check.className = `w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${opt[1]?'bg-emerald-500 border-emerald-500 text-white':'border-slate-300 text-transparent hover:border-emerald-300'}`; check.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>'; check.onclick = () => { opt[1] = !opt[1]; saveData(); renderCardList(); };
+                        const inp = document.createElement('input'); inp.className = "flex-grow bg-transparent border-b border-slate-100 hover:border-slate-300 focus:border-emerald-500 focus:outline-none py-1 text-sm text-slate-700 dark:text-slate-300"; inp.value = opt[0]; inp.oninput = (e) => { opt[0] = e.target.value; debounceSave(); };
+                        const delOpt = document.createElement('button'); delOpt.className = "text-slate-300 hover:text-red-400 px-1"; delOpt.textContent = "×"; delOpt.onclick = () => { c.a.splice(oIdx, 1); saveData(); renderCardList(); };
+                        optRow.appendChild(check); optRow.appendChild(inp); optRow.appendChild(delOpt); opts.appendChild(optRow);
+                    });
+                    const addOpt = document.createElement('button'); addOpt.className = "text-xs text-emerald-600 font-bold hover:underline mt-1"; addOpt.textContent = "+ 選択肢を追加"; addOpt.onclick = () => { c.a.push(["", false]); saveData(); renderCardList(); };
+                    opts.appendChild(addOpt); row.appendChild(opts); list.appendChild(row);
+                }
+            });
+        }
+
+        // --- Actions ---
+        function addEmptyCard() { const d = getCurrentDeck(); if(d.mod === 'flash') d.con.push({q:"", a:""}); else d.con.push({q:"", a:[["",false],["",false]]}); saveData(); renderCardList(); }
+        function removeCard(idx) { getCurrentDeck().con.splice(idx, 1); saveData(); renderCardList(); }
+        function updateMeta() { getCurrentDeck().nam = document.getElementById('meta-title').value; debounceSave(); }
+        function startStudyDirect(id) { state.currentDeckId = id; startStudy(); }
+        function startStudy() {
+            const d = getCurrentDeck(); if(!d.con.length) return alert("カードがありません");
+            d.stats.plays++; d.stats.lastPlayed = new Date().toISOString(); saveData();
+            setView('view-study'); document.querySelector('header').classList.add('hidden');
+            state.studyIndex = 0; state.quizSelected = new Set(); state.quizAnswered = false; document.getElementById('study-deck-name').textContent = d.nam; renderStudyUI();
+        }
+        function exitStudy() { document.querySelector('header').classList.remove('hidden'); renderDashboard(); }
+        function renderStudyUI() { const d = getCurrentDeck(); if (d.mod === 'flash') renderFlashUI(); else renderQuizUI(); }
+        
+        function renderFlashUI() {
+            const d = getCurrentDeck(); const c = d.con[state.studyIndex]; const area = document.getElementById('study-card-area');
+            const progress = document.getElementById('study-progress');
+            const progressBar = document.getElementById('study-progress-bar');
+            
+            progress.textContent = `${state.studyIndex + 1} / ${d.con.length}`; 
+            progressBar.style.width = `${((state.studyIndex + 1) / d.con.length) * 100}%`;
+            progressBar.style.backgroundColor = d.col; 
+
+            document.getElementById('quiz-controls').classList.add('hidden'); 
+            document.getElementById('study-hint').textContent = "キーボード操作: [→] 進む / [←] 戻る";
+            document.getElementById('btn-next').style.backgroundColor = d.col;
+
+            area.className = "w-full h-full relative cursor-pointer group flip-container"; area.onclick = () => area.classList.toggle('flipped');
+            area.innerHTML = `
+                <div class="flipper w-full h-full shadow-2xl rounded-2xl">
+                    <div class="front bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700">
+                        <div class="w-full overflow-y-auto max-h-full"><p class="text-3xl font-bold text-slate-800 dark:text-slate-100">${escapeHtml(c.q)}</p></div>
+                        <span class="absolute bottom-4 text-xs text-slate-400 font-medium">タップで裏返す / Tap to flip</span>
+                    </div>
+                    <div class="back text-white border-2" style="background-color: ${d.col}; border-color: ${d.col}">
+                        <div class="w-full overflow-y-auto max-h-full"><p class="text-3xl font-bold">${escapeHtml(c.a)}</p></div>
+                    </div>
+                </div>
+            `;
+        }
+        function renderQuizUI() {
+            const d = getCurrentDeck(); const c = d.con[state.studyIndex]; const area = document.getElementById('study-card-area'); const qc = document.getElementById('quiz-controls');
+            const progress = document.getElementById('study-progress');
+            const progressBar = document.getElementById('study-progress-bar');
+
+            progress.textContent = `${state.studyIndex + 1} / ${d.con.length}`; 
+            progressBar.style.width = `${((state.studyIndex + 1) / d.con.length) * 100}%`;
+            progressBar.style.backgroundColor = d.col; 
+
+            document.getElementById('btn-next').style.backgroundColor = d.col;
+            document.getElementById('btn-quiz-submit').style.backgroundColor = d.col;
+
+            state.quizSelected.clear(); state.quizAnswered = false; qc.classList.add('hidden');
+            area.className = "w-full h-full relative flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6"; area.onclick = null;
+            const isMulti = c.a.filter(a => a[1]).length > 1;
+            let html = `<div class="flex-shrink-0 mb-4"><span class="text-xs font-bold text-emerald-500 uppercase tracking-wide">${isMulti?'複数選択 (全て選んで回答)':'単一選択'}</span><h3 class="text-2xl font-bold text-slate-800 dark:text-white mt-2">${escapeHtml(c.q)}</h3></div><div class="grid gap-3 w-full mt-4 overflow-y-auto">`;
+            c.a.forEach((opt, idx) => { html += `<button id="opt-${idx}" onclick="handleQuizSelect(${idx}, ${isMulti})" class="text-left w-full p-4 rounded-xl border-2 border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center group"><div class="w-6 h-6 rounded-full border-2 border-slate-300 mr-4 flex items-center justify-center group-hover:border-primary-400"><div class="w-3 h-3 rounded-full opacity-0 transition" style="background-color: ${d.col}"></div></div><span class="font-bold text-lg text-slate-700 dark:text-slate-200">${escapeHtml(opt[0])}</span></button>`; });
+            html += `</div><div id="quiz-feedback" class="mt-4 hidden p-4 rounded-lg font-bold text-center text-xl"></div>`; area.innerHTML = html; if (isMulti) qc.classList.remove('hidden');
+        }
+        function handleQuizSelect(idx, isMulti) {
+            if (state.quizAnswered) return; const btn = document.getElementById(`opt-${idx}`), ind = btn.querySelector('div > div');
+            const col = getCurrentDeck().col;
+            if (isMulti) { 
+                if (state.quizSelected.has(idx)) { 
+                    state.quizSelected.delete(idx); 
+                    btn.style.borderColor = ""; btn.style.backgroundColor = ""; 
+                    ind.classList.remove('opacity-100'); 
+                } else { 
+                    state.quizSelected.add(idx); 
+                    btn.style.borderColor = col; btn.style.backgroundColor = `${col}20`; 
+                    ind.classList.add('opacity-100'); 
+                } 
+            } else { 
+                state.quizSelected.clear(); state.quizSelected.add(idx); 
+                btn.style.borderColor = col; btn.style.backgroundColor = `${col}20`;
+                submitQuiz(); 
+            }
+        }
+        function submitQuiz() {
+            if (state.quizAnswered) return; state.quizAnswered = true; document.getElementById('quiz-controls').classList.add('hidden');
+            const d = getCurrentDeck(); const c = d.con[state.studyIndex]; let correct = true;
+            c.a.forEach((opt, idx) => { 
+                const btn = document.getElementById(`opt-${idx}`); 
+                const should = opt[1] === true, selected = state.quizSelected.has(idx); 
+                btn.style.borderColor = ""; btn.style.backgroundColor = "";
+                if (should) { btn.classList.add('border-emerald-500','bg-emerald-50'); btn.innerHTML+=`<span class="ml-auto text-emerald-600">✓</span>`; } 
+                else if (selected) { btn.classList.add('border-red-500','bg-red-50'); btn.innerHTML+=`<span class="ml-auto text-red-600">✗</span>`; correct=false; } 
+                if (should !== selected) correct = false; 
+            });
+            const fb = document.getElementById('quiz-feedback'); fb.classList.remove('hidden'); 
+            if (correct) { fb.textContent = "Correct! 🎉"; fb.classList.add('bg-emerald-100','text-emerald-700','animate-pulse-fast'); } 
+            else { fb.textContent = "Wrong..."; fb.classList.add('bg-red-100','text-red-700'); }
+        }
+        function handleKeyboardNext() { const d = getCurrentDeck(); if (d.mod === 'flash') { const area = document.getElementById('study-card-area'); if (!area.classList.contains('flipped')) area.classList.add('flipped'); else if (state.studyIndex < d.con.length - 1) { state.studyIndex++; renderStudyUI(); } } else { if (state.studyIndex < d.con.length - 1) { state.studyIndex++; renderStudyUI(); } } }
+        function handleKeyboardPrev() { if (state.studyIndex > 0) { state.studyIndex--; renderStudyUI(); } }
+
+        function setView(id) { ['view-dashboard','view-editor','view-study'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); if(id !== 'view-dashboard') document.querySelector('header').classList.add('hidden'); }
+        function toggleAppMenu() { const m = document.getElementById('app-dropdown'); if (m.classList.contains('hidden')) { m.classList.remove('hidden'); setTimeout(()=>m.classList.add('modal-active'),10); } else { m.classList.remove('modal-active'); setTimeout(()=>m.classList.add('hidden'),200); } }
+        function switchAppMode(mode) { state.currentAppMode = mode; updateAppHeader(); renderDashboard(); toggleAppMenu(); state.currentFolderId = null; renderFolderNav(); }
+        function updateAppHeader() { document.getElementById('app-icon').textContent = state.currentAppMode === 'flash' ? '⚡' : '🎓'; document.getElementById('app-name').textContent = state.currentAppMode === 'flash' ? 'pipoFlash' : 'pipoQuiz'; }
+        function toggleLicenses() {
+            const main = document.getElementById('settings-main');
+            const lic = document.getElementById('settings-licenses');
+            if (main.classList.contains('hidden')) { main.classList.remove('hidden'); lic.classList.add('hidden'); }
+            else { main.classList.add('hidden'); lic.classList.remove('hidden'); }
+        }
+        function openModal(id) { const el = document.getElementById(id); el.classList.remove('pointer-events-none'); el.classList.remove('hidden'); setTimeout(() => { el.classList.remove('opacity-0'); el.querySelector('div').classList.add('modal-active'); }, 10); }
+        function closeModal(id) { 
+            const el = document.getElementById(id); 
+            el.classList.add('opacity-0'); 
+            el.querySelector('div').classList.remove('modal-active'); 
+            setTimeout(() => { el.classList.add('hidden'); el.classList.add('pointer-events-none'); }, 200); 
+            if(id==='modal-settings') {
+                document.getElementById('settings-main').classList.remove('hidden');
+                document.getElementById('settings-licenses').classList.add('hidden');
+            }
+        }
+        function openCreateModal() { openModal('modal-create'); }
+        function openSettings() { openModal('modal-settings'); }
+        function toggleSidebar() { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if (sb.classList.contains('-translate-x-full')) { sb.classList.remove('-translate-x-full'); ov.classList.remove('hidden'); } else { sb.classList.add('-translate-x-full'); ov.classList.add('hidden'); } }
+        function renderFolderNav() { const list = document.getElementById('folder-list'); list.innerHTML = ''; appData.folders.forEach(f => { const btn = document.createElement('button'); btn.className = `w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg group ${state.currentFolderId===f.id ? 'bg-slate-200 dark:bg-slate-700' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'}`; btn.innerHTML = `<span>📁 ${escapeHtml(f.name)}</span><span onclick="deleteFolder('${f.id}')" class="opacity-0 group-hover:opacity-100 hover:text-red-500 p-1">×</span>`; btn.onclick = (e) => { if(!e.target.closest('span:last-child')) { state.currentFolderId = f.id; renderFolderNav(); renderDashboard(); if(window.innerWidth<1024) toggleSidebar(); }}; list.appendChild(btn); }); }
+        function createFolder() { const n = prompt("フォルダ名:"); if(n) { appData.folders.push({id:uuid(), name:n}); saveData(); renderFolderNav(); } }
+        function deleteFolder(id) { if(confirm("削除しますか？")) { appData.folders = appData.folders.filter(f=>f.id!==id); saveData(); renderFolderNav(); renderDashboard(); } }
+        
+        function createNewDeck() { 
+            const newDeck = { id: uuid(), folderId: state.currentFolderId, pSver: 1, cre: "User", ver: 1, nam: "新しいデッキ", mod: state.currentAppMode, col: "#6366f1", ico: state.currentAppMode==='flash'?'📂':'🎓', con: [], stats: {plays:0} }; 
+            appData.decks.push(newDeck); saveData(); closeModal('modal-create'); openEditor(newDeck.id); 
+        }
+        function openMoveModalFromSettings() { state.moveTargetDeckId = state.editingDeckId; closeModal('modal-deck-settings'); const list = document.getElementById('move-folder-list'); list.innerHTML = `<button onclick="executeMove(null)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200">📁 (ルート)</button>`; appData.folders.forEach(f => list.innerHTML += `<button onclick="executeMove('${f.id}')" class="w-full text-left px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200">📁 ${escapeHtml(f.name)}</button>`); openModal('modal-move'); }
+        function deleteDeckFromSettings() { if(confirm("このデッキを削除してもよろしいですか？")) { appData.decks = appData.decks.filter(d => d.id !== state.editingDeckId); saveData(); closeModal('modal-deck-settings'); renderDashboard(); } }
+        function executeMove(fid) { const d = appData.decks.find(d => d.id === state.moveTargetDeckId); if(d) { d.folderId = fid; saveData(); renderDashboard(); } closeModal('modal-move'); }
+        
+        function handleImport(input) { const file = input.files[0]; if(!file) return; const r = new FileReader(); r.onload = e => { try { if(file.name.endsWith('.csv')) { const con=e.target.result.split('\n').map(l=>{const p=l.split(',');return p.length>=2?{q:p[0].trim(),a:p.slice(1).join(',').trim()}:null;}).filter(Boolean); appData.decks.push({ id: uuid(), folderId: state.currentFolderId, pSver:1, cre:"User", ver:1, nam: file.name.replace('.csv',''), mod: 'flash', col:'#6366f1', ico:'📂', con, stats:{plays:0} }); } else { 
+            const j = JSON.parse(e.target.result); 
+            // pSJSON Array Import
+            if(Array.isArray(j)) { 
+                j.forEach(d => { 
+                    if(!d.id) d.id = uuid(); 
+                    d.folderId = state.currentFolderId;
+                    if(!d.stats) d.stats = {plays:0};
+                    appData.decks.push(d); 
+                }); 
+            } else if (j.decks) { 
+                if(confirm("全データを上書きしますか？")) appData = j; 
+            }
+        } saveData(); closeModal('modal-create'); renderDashboard(); } catch(err){ alert("Error: "+err); } }; r.readAsText(file); input.value=""; }
+        
+        function exportAllData() { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData)); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); }
+        
+        function toggleJsonMode() { const gui = document.getElementById('editor-gui'), jsonUi = document.getElementById('editor-json'), btn = document.getElementById('btn-json-mode'); const deck = getCurrentDeck(); if (gui.classList.contains('hidden')) { jsonUi.classList.add('hidden'); gui.classList.remove('hidden'); btn.className = "px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition"; renderCardList(); } else { document.getElementById('json-textarea').value = JSON.stringify(deck, null, 2); gui.classList.add('hidden'); jsonUi.classList.remove('hidden'); btn.className = "px-3 py-1.5 text-xs font-bold bg-slate-800 text-white border border-slate-800 rounded"; } }
+        function saveJsonRaw() { try { const deck = getCurrentDeck(); const parsed = JSON.parse(document.getElementById('json-textarea').value); if (parsed.mod === deck.mod) { Object.assign(deck, parsed); saveData(); toggleJsonMode(); updateMeta(); } else { throw new Error("モードの変更はできません"); } } catch(e) { alert("JSONエラー: "+e.message); } }
+    </script>
+</body>
+</html>
