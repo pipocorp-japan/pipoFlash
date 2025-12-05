@@ -234,6 +234,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
             <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">デッキ設定</h3>
             <div class="space-y-4">
+                    <button onclick="exportDeckPsjson()" class="w-full py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">エクスポート (pSJSON)</button>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-1">デッキ名</label>
                     <input type="text" id="setting-name" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
@@ -644,6 +645,24 @@
         
         function toggleJsonMode() { const gui = document.getElementById('editor-gui'), jsonUi = document.getElementById('editor-json'), btn = document.getElementById('btn-json-mode'); const deck = getCurrentDeck(); if (gui.classList.contains('hidden')) { jsonUi.classList.add('hidden'); gui.classList.remove('hidden'); btn.className = "px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition"; renderCardList(); } else { document.getElementById('json-textarea').value = JSON.stringify(deck, null, 2); gui.classList.add('hidden'); jsonUi.classList.remove('hidden'); btn.className = "px-3 py-1.5 text-xs font-bold bg-slate-800 text-white border border-slate-800 rounded"; } }
         function saveJsonRaw() { try { const deck = getCurrentDeck(); const parsed = JSON.parse(document.getElementById('json-textarea').value); if (parsed.mod === deck.mod) { Object.assign(deck, parsed); saveData(); toggleJsonMode(); updateMeta(); } else { throw new Error("モードの変更はできません"); } } catch(e) { alert("JSONエラー: "+e.message); } }
+        // 既存のコードに追加
+        function exportDeckPsjson() {
+            const deck = appData.decks.find(d => d.id === state.editingDeckId);
+            if (!deck) return alert("デッキが見つかりません");
+            
+            // インポート機能が配列形式([deck1, deck2...])に対応しているため、
+            // 単体でも配列に入れて出力することで、再インポート可能なpSJSONになります。
+            const exportData = [deck];
+            
+            const a = document.createElement('a');
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+            a.download = `${deck.nam}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            
+            closeModal('modal-deck-settings');
+        }
     </script>
 </body>
 </html>
