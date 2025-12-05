@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja" class="light">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>pipoFlash</title>
-    
     <!-- Google Fonts: Inter (SIL Open Font License) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <!-- Tailwind CSS (MIT License) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,7 +22,6 @@
             }
         }
     </script>
-    
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         
@@ -46,271 +43,295 @@
         .modal-active { opacity: 1; transform: scale(1); }
         .page-transition { transition: opacity 0.2s ease-in-out; }
     </style>
-</head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen flex overflow-hidden transition-colors duration-200">
-
+  </head>
+  <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen flex overflow-hidden transition-colors duration-200">
     <!-- サイドバー -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl lg:shadow-none">
-        
-        <!-- App Switcher -->
-        <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition group" onclick="toggleAppMenu()">
-            <span id="app-icon" class="text-2xl mr-3 group-hover:scale-110 transition-transform">⚡</span>
-            <div class="flex-grow">
-                <h1 id="app-name" class="font-extrabold text-lg tracking-tight text-slate-800 dark:text-white">pipoFlash</h1>
-                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Tap to switch</p>
-            </div>
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            
-            <!-- Dropdown -->
-            <div id="app-dropdown" class="absolute top-16 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-600 p-2 hidden z-50 flex-col gap-1 ring-1 ring-black/5">
-                <button onclick="switchAppMode('flash')" class="flex items-center p-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-left transition">
-                    <span class="text-2xl mr-3">⚡</span>
-                    <div><div class="font-bold">pipoFlash</div><div class="text-xs text-slate-500">暗記カードモード</div></div>
-                </button>
-                <button onclick="switchAppMode('quiz')" class="flex items-center p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-left transition">
-                    <span class="text-2xl mr-3">🎓</span>
-                    <div><div class="font-bold">pipoQuiz</div><div class="text-xs text-slate-500">4択クイズモード</div></div>
-                </button>
-            </div>
+      <!-- App Switcher -->
+      <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition group" onclick="toggleAppMenu()">
+        <span id="app-icon" class="text-2xl mr-3 group-hover:scale-110 transition-transform">⚡</span>
+        <div class="flex-grow">
+          <h1 id="app-name" class="font-extrabold text-lg tracking-tight text-slate-800 dark:text-white">pipoFlash</h1>
+          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Tap to switch</p>
         </div>
-
-        <nav class="flex-grow overflow-y-auto p-4 space-y-1">
-            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Library</div>
-            <button onclick="selectFolder(null)" id="nav-all" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                すべてのデッキ
-            </button>
-            
-            <div class="mt-8 flex justify-between items-center px-2 mb-2">
-                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Folders</div>
-                <button onclick="createFolder()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                </button>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+        <!-- Dropdown -->
+        <div id="app-dropdown" class="absolute top-16 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-600 p-2 hidden z-50 flex-col gap-1 ring-1 ring-black/5">
+          <button onclick="switchAppMode('flash')" class="flex items-center p-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-left transition">
+            <span class="text-2xl mr-3">⚡</span>
+            <div>
+              <div class="font-bold">pipoFlash</div>
+              <div class="text-xs text-slate-500">暗記カードモード</div>
             </div>
-            <div id="folder-list" class="space-y-1"></div>
-        </nav>
-
-        <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <button onclick="openSettings()" class="flex items-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                設定
-            </button>
-            <button onclick="toggleDarkMode()" class="text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-yellow-300 transition">
-                <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
+          </button>
+          <button onclick="switchAppMode('quiz')" class="flex items-center p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-left transition">
+            <span class="text-2xl mr-3">🎓</span>
+            <div>
+              <div class="font-bold">pipoQuiz</div>
+              <div class="text-xs text-slate-500">4択クイズモード</div>
+            </div>
+          </button>
         </div>
+      </div>
+      <nav class="flex-grow overflow-y-auto p-4 space-y-1">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Library</div>
+        <button onclick="selectFolder(null)" id="nav-all" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white">
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>すべてのデッキ 
+        </button>
+        <div class="mt-8 flex justify-between items-center px-2 mb-2">
+          <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Folders</div>
+          <button onclick="createFolder()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="folder-list" class="space-y-1"></div>
+      </nav>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <button onclick="openSettings()" class="flex items-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>設定 
+        </button>
+        <button onclick="toggleDarkMode()" class="text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-yellow-300 transition">
+          <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+      </div>
     </aside>
-
     <!-- メインエリア -->
     <main class="flex-grow flex flex-col h-full overflow-hidden w-full lg:ml-72 transition-all duration-300">
-        
-        <!-- ヘッダー -->
-        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 justify-between flex-shrink-0 z-10">
-            <div class="flex items-center overflow-hidden">
-                <button onclick="toggleSidebar()" class="lg:hidden mr-3 p-2 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <h2 id="page-title" class="text-lg font-bold text-slate-800 dark:text-white truncate">すべてのデッキ</h2>
-            </div>
-            <div id="save-indicator" class="text-xs font-medium text-slate-400 flex items-center opacity-0 transition-opacity duration-500">
-                <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Saving...
-            </div>
-        </header>
-
-        <!-- 1. ダッシュボード -->
-        <div id="view-dashboard" class="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-900 page-transition">
-            <div id="deck-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
-            
-            <div id="empty-state" class="hidden flex flex-col items-center justify-center h-96 text-center">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-full mb-6 shadow-sm animate-bounce-slow">
-                    <span class="text-5xl" id="empty-icon">📂</span>
-                </div>
-                <h3 class="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">デッキがありません</h3>
-                <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">右下の＋ボタンを押して、新しい学習セットを作成しましょう。</p>
-                <button onclick="openCreateModal()" class="px-6 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
-                    + 新しいデッキを作成
-                </button>
-            </div>
-
-            <button onclick="openCreateModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 flex items-center justify-center transition transform hover:scale-110 z-20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+      <!-- ヘッダー -->
+      <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 justify-between flex-shrink-0 z-10">
+        <div class="flex items-center overflow-hidden">
+          <button onclick="toggleSidebar()" class="lg:hidden mr-3 p-2 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+          <h2 id="page-title" class="text-lg font-bold text-slate-800 dark:text-white truncate">すべてのデッキ</h2>
+        </div>
+        <div id="save-indicator" class="text-xs font-medium text-slate-400 flex items-center opacity-0 transition-opacity duration-500">
+          <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>Saving... 
+        </div>
+      </header>
+      <!-- 1. ダッシュボード -->
+      <div id="view-dashboard" class="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-900 page-transition">
+        <div id="deck-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center h-96 text-center">
+          <div class="bg-white dark:bg-slate-800 p-6 rounded-full mb-6 shadow-sm animate-bounce-slow">
+            <span class="text-5xl" id="empty-icon">📂</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">デッキがありません</h3>
+          <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">右下の＋ボタンを押して、新しい学習セットを作成しましょう。</p>
+          <button onclick="openCreateModal()" class="px-6 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">+ 新しいデッキを作成 </button>
+        </div>
+        <button onclick="openCreateModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 flex items-center justify-center transition transform hover:scale-110 z-20">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- 2. エディタ -->
+      <div id="view-editor" class="hidden flex-grow flex flex-col bg-slate-50 dark:bg-slate-900 relative z-20 page-transition">
+        <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between shadow-sm z-30">
+          <div class="flex-grow w-full sm:w-auto flex gap-2">
+            <button onclick="renderDashboard()" class="p-2 mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
             </button>
-        </div>
-
-        <!-- 2. エディタ -->
-        <div id="view-editor" class="hidden flex-grow flex flex-col bg-slate-50 dark:bg-slate-900 relative z-20 page-transition">
-            <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between shadow-sm z-30">
-                <div class="flex-grow w-full sm:w-auto flex gap-2">
-                    <button onclick="renderDashboard()" class="p-2 mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                    <input type="text" id="meta-title" class="flex-grow bg-transparent border-b-2 border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none text-xl font-bold text-slate-900 dark:text-white px-2 py-1 transition" placeholder="デッキ名" oninput="debounceSave()">
-                </div>
-                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                    <span id="editor-mode-badge" class="px-2 py-1 text-xs font-bold rounded bg-slate-100 dark:bg-slate-700 text-slate-500 uppercase">MODE</span>
-                    <button onclick="toggleJsonMode()" id="btn-json-mode" class="px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">JSON</button>
-                    <button onclick="startStudy()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm shadow hover:bg-indigo-700 flex items-center transition hover:shadow-md">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                        学習開始
-                    </button>
-                </div>
-            </div>
-            
-            <div class="flex-grow relative overflow-hidden">
-                <div id="editor-gui" class="absolute inset-0 overflow-y-auto p-4 sm:p-8 pb-32">
-                    <div id="card-list" class="space-y-4 max-w-4xl mx-auto"></div>
-                    <div class="max-w-4xl mx-auto mt-6">
-                         <button onclick="addEmptyCard()" class="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center justify-center font-bold bg-slate-50 dark:bg-slate-800/50">
-                            + カードを追加
-                        </button>
-                    </div>
-                </div>
-                <div id="editor-json" class="absolute inset-0 hidden p-4 sm:p-6 bg-slate-900 z-40">
-                    <textarea id="json-textarea" class="w-full h-full bg-slate-800 text-emerald-400 font-mono text-sm p-4 rounded border border-slate-700 focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"></textarea>
-                    <button onclick="saveJsonRaw()" class="absolute bottom-8 right-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded shadow-lg hover:bg-emerald-500 z-50 transition">保存して戻る</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. 学習モード -->
-        <div id="view-study" class="hidden flex-grow flex flex-col items-center justify-center p-4 bg-slate-100 dark:bg-slate-900 relative z-50 page-transition">
-            <button onclick="exitStudy()" class="absolute top-4 left-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition" title="終了 (Esc)">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <input type="text" id="meta-title" class="flex-grow bg-transparent border-b-2 border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none text-xl font-bold text-slate-900 dark:text-white px-2 py-1 transition" placeholder="デッキ名" oninput="debounceSave()">
+          </div>
+          <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+            <span id="editor-mode-badge" class="px-2 py-1 text-xs font-bold rounded bg-slate-100 dark:bg-slate-700 text-slate-500 uppercase">MODE</span>
+            <button onclick="toggleJsonMode()" id="btn-json-mode" class="px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">JSON</button>
+            <button onclick="startStudy()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm shadow hover:bg-indigo-700 flex items-center transition hover:shadow-md">
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+              </svg>学習開始 
             </button>
-
-            <div class="w-full max-w-2xl h-full flex flex-col justify-center py-4">
-                <div class="flex justify-between items-end mb-4 px-2">
-                    <h2 id="study-deck-name" class="text-xl font-bold text-slate-700 dark:text-slate-200 truncate pr-4">Title</h2>
-                    <div id="study-progress" class="text-sm font-mono text-slate-500 dark:text-slate-400 font-bold">1 / 10</div>
-                </div>
-                
-                <!-- 進捗バー -->
-                <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
-                    <div id="study-progress-bar" class="h-full transition-all duration-300"></div>
-                </div>
-
-                <div id="study-card-area" class="w-full relative flex-grow max-h-[600px] bg-transparent perspective-1000"></div>
-                
-                <div class="flex justify-between items-center mt-8 px-8 h-20">
-                    <button onclick="handleKeyboardPrev()" class="p-4 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full shadow-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition transform hover:-translate-x-1" title="戻る (←)">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                    </button>
-                    <div id="quiz-controls" class="hidden flex gap-4">
-                        <button id="btn-quiz-submit" onclick="submitQuiz()" class="px-8 py-3 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105">回答する</button>
-                    </div>
-                    <button id="btn-next" onclick="handleKeyboardNext()" class="p-4 text-white rounded-full shadow-lg transition transform hover:translate-x-1 hover:shadow-xl" title="進む (→)">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
-                </div>
-                <p class="text-center text-xs text-slate-400 mt-4 h-4" id="study-hint">キーボード操作: [→] 進む / [←] 戻る</p>
-            </div>
+          </div>
         </div>
+        <div class="flex-grow relative overflow-hidden">
+          <div id="editor-gui" class="absolute inset-0 overflow-y-auto p-4 sm:p-8 pb-32">
+            <div id="card-list" class="space-y-4 max-w-4xl mx-auto"></div>
+            <div class="max-w-4xl mx-auto mt-6">
+              <button onclick="addEmptyCard()" class="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center justify-center font-bold bg-slate-50 dark:bg-slate-800/50">+ カードを追加 </button>
+            </div>
+          </div>
+          <div id="editor-json" class="absolute inset-0 hidden p-4 sm:p-6 bg-slate-900 z-40">
+            <textarea id="json-textarea" class="w-full h-full bg-slate-800 text-emerald-400 font-mono text-sm p-4 rounded border border-slate-700 focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"></textarea>
+            <button onclick="saveJsonRaw()" class="absolute bottom-8 right-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded shadow-lg hover:bg-emerald-500 z-50 transition">保存して戻る</button>
+          </div>
+        </div>
+      </div>
+      <!-- 3. 学習モード -->
+      <div id="view-study" class="hidden flex-grow flex flex-col items-center justify-center p-4 bg-slate-100 dark:bg-slate-900 relative z-50 page-transition">
+        <button onclick="exitStudy()" class="absolute top-4 left-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition" title="終了 (Esc)">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div class="w-full max-w-2xl h-full flex flex-col justify-center py-4">
+          <div class="flex justify-between items-end mb-4 px-2">
+            <h2 id="study-deck-name" class="text-xl font-bold text-slate-700 dark:text-slate-200 truncate pr-4">Title</h2>
+            <div id="study-progress" class="text-sm font-mono text-slate-500 dark:text-slate-400 font-bold">1 / 10</div>
+          </div>
+          <!-- 進捗バー -->
+          <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
+            <div id="study-progress-bar" class="h-full transition-all duration-300"></div>
+          </div>
+          <div id="study-card-area" class="w-full relative flex-grow max-h-[600px] bg-transparent perspective-1000"></div>
+          <div class="flex justify-between items-center mt-8 px-8 h-20">
+            <button onclick="handleKeyboardPrev()" class="p-4 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full shadow-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition transform hover:-translate-x-1" title="戻る (←)">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <div id="quiz-controls" class="hidden flex gap-4">
+              <button id="btn-quiz-submit" onclick="submitQuiz()" class="px-8 py-3 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105">回答する</button>
+            </div>
+            <button id="btn-next" onclick="handleKeyboardNext()" class="p-4 text-white rounded-full shadow-lg transition transform hover:translate-x-1 hover:shadow-xl" title="進む (→)">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+          <p class="text-center text-xs text-slate-400 mt-4 h-4" id="study-hint">キーボード操作: [→] 進む / [←] 戻る</p>
+        </div>
+      </div>
     </main>
-
     <!-- モーダル: 新規作成 -->
     <div id="modal-create" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white">新規作成</h3>
-                <button onclick="closeModal('modal-create')" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <div class="p-5 space-y-3">
-                <button onclick="createNewDeck()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 transition group">
-                    <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg text-indigo-600 dark:text-indigo-300 mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
-                    <div class="text-left"><div class="font-bold text-slate-800 dark:text-slate-200">空白のデッキ</div><div class="text-xs text-slate-500">一から作成します</div></div>
-                </button>
-                <button onclick="document.getElementById('file-import').click()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-200 transition group">
-                    <div class="bg-emerald-100 dark:bg-emerald-900 p-3 rounded-lg text-emerald-600 dark:text-emerald-300 mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></div>
-                    <div class="text-left"><div class="font-bold text-slate-800 dark:text-slate-200">インポート (pSJSON/CSV)</div><div class="text-xs text-slate-500">ファイルを読み込みます</div></div>
-                </button>
-                <input type="file" id="file-import" class="hidden" accept=".json,.csv" onchange="handleImport(this)">
-            </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 transition-transform duration-200">
+        <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white">新規作成</h3>
+          <button onclick="closeModal('modal-create')" class="text-slate-400 hover:text-slate-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
         </div>
+        <div class="p-5 space-y-3">
+          <button onclick="createNewDeck()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 transition group">
+            <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg text-indigo-600 dark:text-indigo-300 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-slate-800 dark:text-slate-200">空白のデッキ</div>
+              <div class="text-xs text-slate-500">一から作成します</div>
+            </div>
+          </button>
+          <button onclick="document.getElementById('file-import').click()" class="w-full flex items-center p-4 border dark:border-slate-700 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-200 transition group">
+            <div class="bg-emerald-100 dark:bg-emerald-900 p-3 rounded-lg text-emerald-600 dark:text-emerald-300 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+              </svg>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-slate-800 dark:text-slate-200">インポート (pSJSON/CSV)</div>
+              <div class="text-xs text-slate-500">ファイルを読み込みます</div>
+            </div>
+          </button>
+          <input type="file" id="file-import" class="hidden" accept=".json,.csv" onchange="handleImport(this)">
+        </div>
+      </div>
     </div>
-
     <!-- モーダル: デッキ設定 -->
     <div id="modal-deck-settings" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
-            <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">デッキ設定</h3>
-            <div class="space-y-4">
-                    <button onclick="exportDeckPsjson()" class="w-full py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">エクスポート (pSJSON)</button>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">デッキ名</label>
-                    <input type="text" id="setting-name" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-1/3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">アイコン</label>
-                        <input type="text" id="setting-icon" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-center text-2xl focus:ring-2 focus:ring-indigo-500" placeholder="📂">
-                    </div>
-                    <div class="w-2/3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">テーマカラー (HEX)</label>
-                        <div class="flex items-center gap-2">
-                             <input type="color" id="setting-color" class="h-10 w-full rounded cursor-pointer border-0 bg-transparent p-0">
-                        </div>
-                    </div>
-                </div>
-                <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
-                    <button onclick="openMoveModalFromSettings()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition">フォルダー移動</button>
-                    <button onclick="deleteDeckFromSettings()" class="w-full py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition">デッキを削除</button>
-                </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+        <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">デッキ設定</h3>
+        <div class="space-y-4">
+          <button onclick="exportDeckPsjson()" class="w-full py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">エクスポート (pSJSON)</button>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">デッキ名</label>
+            <input type="text" id="setting-name" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="flex gap-4">
+            <div class="w-1/3">
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">アイコン</label>
+              <input type="text" id="setting-icon" class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-2 text-center text-2xl focus:ring-2 focus:ring-indigo-500" placeholder="📂">
             </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button onclick="closeModal('modal-deck-settings')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-bold">キャンセル</button>
-                <button onclick="saveDeckSettings()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md">保存</button>
+            <div class="w-2/3">
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">テーマカラー (HEX)</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="setting-color" class="h-10 w-full rounded cursor-pointer border-0 bg-transparent p-0">
+              </div>
             </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
+            <button onclick="openMoveModalFromSettings()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition">フォルダー移動</button>
+            <button onclick="deleteDeckFromSettings()" class="w-full py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition">デッキを削除</button>
+          </div>
         </div>
+        <div class="mt-6 flex justify-end gap-2">
+          <button onclick="closeModal('modal-deck-settings')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-bold">キャンセル</button>
+          <button onclick="saveDeckSettings()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md">保存</button>
+        </div>
+      </div>
     </div>
-
     <!-- モーダル: アプリ設定 -->
     <div id="modal-settings" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
-            <!-- Settings View -->
-            <div id="settings-main">
-                <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">アプリ設定</h3>
-                <div class="space-y-3">
-                    <button onclick="exportAllData()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">全データをバックアップ (JSON)</button>
-                    <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold">謝辞 / Open Source Licenses</button>
-                    <button onclick="closeModal('modal-settings')" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-lg text-sm">閉じる</button>
-                </div>
-            </div>
-            
-            <!-- Licenses View (Hidden by default) -->
-            <div id="settings-licenses" class="hidden">
-                <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">謝辞 / Credits</h3>
-                <div class="space-y-4 text-xs text-slate-600 dark:text-slate-400 h-64 overflow-y-auto pr-2 mb-4">
-                    <div>
-                        <strong class="block text-sm text-slate-800 dark:text-slate-200">pipoFlash</strong>
-                        <p>Copyright © 2025 Yu Sato</p>
-                    </div>
-                    <div>
-                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Tailwind CSS</strong>
-                        <p>Copyright (c) Tailwind Labs, Inc. (MIT License)</p>
-                    </div>
-                    <div>
-                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Inter Font</strong>
-                        <p>Copyright (c) 2016 The Inter Project Authors (SIL Open Font License, Version 1.1)</p>
-                    </div>
-                    <div>
-                        <strong class="block text-sm text-slate-800 dark:text-slate-200">Heroicons</strong>
-                        <p>Copyright (c) 2020 Refactoring UI Inc. (MIT License)</p>
-                    </div>
-                </div>
-                <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">戻る</button>
-            </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+        <!-- Settings View -->
+        <div id="settings-main">
+          <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">アプリ設定</h3>
+          <div class="space-y-3">
+            <button onclick="exportAllData()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">全データをバックアップ (JSON)</button>
+            <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold">謝辞 / Open Source Licenses</button>
+            <button onclick="closeModal('modal-settings')" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-lg text-sm">閉じる</button>
+          </div>
         </div>
+        <!-- Licenses View (Hidden by default) -->
+        <div id="settings-licenses" class="hidden">
+          <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">謝辞 / Credits</h3>
+          <div class="space-y-4 text-xs text-slate-600 dark:text-slate-400 h-64 overflow-y-auto pr-2 mb-4">
+            <div>
+              <strong class="block text-sm text-slate-800 dark:text-slate-200">pipoFlash</strong>
+              <p>Copyright © 2025 Yu Sato</p>
+            </div>
+            <div>
+              <strong class="block text-sm text-slate-800 dark:text-slate-200">Tailwind CSS</strong>
+              <p>Copyright (c) Tailwind Labs, Inc. (MIT License)</p>
+            </div>
+            <div>
+              <strong class="block text-sm text-slate-800 dark:text-slate-200">Inter Font</strong>
+              <p>Copyright (c) 2016 The Inter Project Authors (SIL Open Font License, Version 1.1)</p>
+            </div>
+            <div>
+              <strong class="block text-sm text-slate-800 dark:text-slate-200">Heroicons</strong>
+              <p>Copyright (c) 2020 Refactoring UI Inc. (MIT License)</p>
+            </div>
+          </div>
+          <button onclick="toggleLicenses()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-bold">戻る</button>
+        </div>
+      </div>
     </div>
-
     <!-- モーダル: 移動 -->
     <div id="modal-move" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 pointer-events-none">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
-            <h3 class="text-lg font-bold mb-4 text-slate-800 dark:text-white">移動先のフォルダー</h3>
-            <div id="move-folder-list" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
-            <button onclick="closeModal('modal-move')" class="w-full py-2 text-slate-500">キャンセル</button>
-        </div>
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+        <h3 class="text-lg font-bold mb-4 text-slate-800 dark:text-white">移動先のフォルダー</h3>
+        <div id="move-folder-list" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
+        <button onclick="closeModal('modal-move')" class="w-full py-2 text-slate-500">キャンセル</button>
+      </div>
     </div>
-
     <script>
         const STORAGE_KEY = 'pipoFlash_v1_data';
         
@@ -626,7 +647,7 @@
         function deleteDeckFromSettings() { if(confirm("このデッキを削除してもよろしいですか？")) { appData.decks = appData.decks.filter(d => d.id !== state.editingDeckId); saveData(); closeModal('modal-deck-settings'); renderDashboard(); } }
         function executeMove(fid) { const d = appData.decks.find(d => d.id === state.moveTargetDeckId); if(d) { d.folderId = fid; saveData(); renderDashboard(); } closeModal('modal-move'); }
         
-        function handleImport(input) { const file = input.files[0]; if(!file) return; const r = new FileReader(); r.onload = e => { try { if(file.name.endsWith('.csv')) { const con=e.target.result.split('\n').map(l=>{const p=l.split(',');return p.length>=2?{q:p[0].trim(),a:p.slice(1).join(',').trim()}:null;}).filter(Boolean); appData.decks.push({ id: uuid(), folderId: state.currentFolderId, pSver:1, cre:"User", ver:1, nam: file.name.replace('.csv',''), mod: 'flash', col:'#6366f1', ico:'📂', con, stats:{plays:0} }); } else { 
+        function handleImport(input) { const file = input.files[0]; if(!file) return; const r = new FileReader(); r.onload = e => { try { if(file.name.endsWith('.csv')) { const con=e.target.result.split('n').map(l=>{const p=l.split(',');return p.length>=2?{q:p[0].trim(),a:p.slice(1).join(',').trim()}:null;}).filter(Boolean); appData.decks.push({ id: uuid(), folderId: state.currentFolderId, pSver:1, cre:"User", ver:1, nam: file.name.replace('.csv',''), mod: 'flash', col:'#6366f1', ico:'📂', con, stats:{plays:0} }); } else { 
             const j = JSON.parse(e.target.result); 
             // pSJSON Array Import
             if(Array.isArray(j)) { 
@@ -664,5 +685,5 @@
             closeModal('modal-deck-settings');
         }
     </script>
-</body>
+  </body>
 </html>
